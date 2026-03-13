@@ -6,7 +6,7 @@ const POSTER_BASE = 'https://image.tmdb.org/t/p/w500'
 const STORAGE_KEY = 'oscars-2026-picks-app'
 
 // TMDB key now comes from Vite env
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY.trim()
 
 function makeInitialState() {
   return OSCAR_DATA.reduce(
