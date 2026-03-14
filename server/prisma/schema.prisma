@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  pinHash   String
+  createdAt DateTime @default(now())
+  ballots   Ballot[]
+}
+
+model Ballot {
+  id        String       @id @default(uuid())
+  userId    String
+  oscarYear Int
+  status    String       @default("open")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  picks     BallotPick[]
+  scores    ScoreSnapshot[]
+
+  @@unique([userId, oscarYear])
+}
+
+model BallotPick {
+  id           String @id @default(uuid())
+  ballotId     String
+  category     String
+  nomineeName  String
+  rankPosition Int
+  ballot       Ballot @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@unique([ballotId, category, nomineeName])
+  @@unique([ballotId, category, rankPosition])
+}
+
+model OfficialResult {
+  id         String   @id @default(uuid())
+  oscarYear  Int
+  category   String
+  winnerName String
+  resultType String   @default("provisional")
+  releasedAt DateTime @default(now())
+
+  @@unique([oscarYear, category, resultType])
+}
+
+model ScoreSnapshot {
+  id         String        @id @default(uuid())
+  ballotId   String
+  resultType String
+  totalScore Int
+  scoredAt   DateTime      @default(now())
+  ballot     Ballot        @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  details    ScoreDetail[]
+
+  @@unique([ballotId, resultType])
+}
+
+model ScoreDetail {
+  id                 String        @id @default(uuid())
+  scoreSnapshotId    String
+  category           String
+  winnerName         String
+  winnerRankPosition Int?
+  pointsAwarded      Int
+  scoreSnapshot      ScoreSnapshot @relation(fields: [scoreSnapshotId], references: [id], onDelete: Cascade)
+}
